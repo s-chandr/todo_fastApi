@@ -11,13 +11,13 @@ app = FastAPI()
 
 client = MongoClient("mongodb://localhost:27017/")
 db = client["todo_db"]
-todos = db["todos"]
+todos = db["todos_new"]
 
 class Todo(BaseModel):
     """
     Model for a Todo item
     """
-    id: Optional[int] = Field( primary_key=True )
+    id: int
     task: str
     done: bool = False
 
@@ -41,8 +41,14 @@ async def create_todo(todo: Todo):
 
 
 # ------------------------------------------------------------------------------------------------
+@app.get("/todos/", response_model=list[Todo])
+async def get_todo():
+    return todos.find({})
+
+
 @app.get("/todos/{title}", response_model=Todo)
-async def get_todo_by_title(title):
+async def get_todo_by_title(title :str ):
+  
     todo = todos.find_one({"task": title})
     
     if todo:
@@ -87,3 +93,8 @@ async def delete_todo(id: int):
 
 # Example request:
 # DELETE /todos/2
+
+
+@app.get("/")
+async def root():
+    return {"message": "Hello World"}
